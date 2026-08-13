@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" href="./favicon.png" type="image/png" sizes="32x32">
+<link rel="apple-touch-icon" href="./apple-touch-icon.png" sizes="180x180">
+
+<title>熱量換算</title>
+
+<style>
+  body {
+    font-family: sans-serif;
+    background: #f4f7f6;
+    padding: 20px;
+    max-width: 900px;
+    margin: auto;
+    color: #333;
+    display: flex;
+    flex-direction: column;
+    min-height: 95vh;
+    box-sizing: border-box;
+  }
+
+  /* ヘッダー：タイトル左、クリアボタン右寄せ */
+  .header-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: relative;
+    margin-bottom: 25px;
+    margin-top: 10px;
+  }
+
+  .header-container h2 {
+    margin: 0;
+  }
+
+  .clear-btn {
+    padding: 8px 15px;
+    background: #ddd;
+    color: #333;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 15px;
+    font-family: inherit;
+    transition: 0.2s;
+  }
+
+  .clear-btn:hover {
+    background: #ccc;
+  }
+
+  .panel {
+    background: #fff;
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+  }
+
+  .content-area {
+    width: 718px;
+    max-width: 100%;
+    margin: 0 auto;
+  }
+
+  /* 換算エリア：両端揃えで下の設定エリアと端を合わせる */
+  .converter-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 30px;
+  }
+
+  .box {
+    border: 1px solid #ddd;
+    padding: 25px;
+    width: 330px;
+    box-sizing: border-box;
+    position: relative;
+    border-radius: 6px;
+    background: #fafafa;
+    flex-shrink: 0;
+  }
+
+  .box-title {
+    position: absolute;
+    top: -12px;
+    left: 15px;
+    background: #fff;
+    padding: 0 8px;
+    font-weight: bold;
+    color: #2c3e50;
+  }
+
+  .row {
+    display: flex;
+    align-items: center;
+    margin-bottom: 15px;
+    gap: 10px;
+  }
+
+  .row:last-child {
+    margin-bottom: 0;
+  }
+
+  .label {
+    width: 60px;
+    font-weight: bold;
+    color: #555;
+    flex-shrink: 0;
+  }
+
+  .number-input {
+    width: 120px;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 16px;
+    text-align: right;
+    font-family: inherit;
+    box-sizing: content-box;
+  }
+
+  .number-input:focus {
+    outline: none;
+    border-color: #3498db;
+    box-shadow: 0 0 5px rgba(52, 152, 219, 0.3);
+  }
+
+  .number-input:read-only {
+    background: #eee;
+    font-weight: bold;
+    color: #2980b9;
+    border-color: #ccc;
+    cursor: default;
+  }
+  
+  .number-input:read-only:focus {
+    border-color: #ccc;
+    box-shadow: none;
+  }
+
+  .arrow-area {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 32px;
+    color: #bbb;
+  }
+
+  /* 設定エリア */
+  .settings-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+    width: 100%;
+    box-sizing: border-box;
+    background: #f9f9f9;
+    padding: 20px;
+    border-radius: 6px;
+    border: 1px solid #ddd;
+  }
+
+  .setting-row {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    width: 100%;
+    max-width: 520px;
+  }
+
+  /* ラベルの左端を揃える設定 */
+  .setting-label {
+    font-weight: bold;
+    color: #2c3e50;
+    width: 100px;
+    text-align: left;
+    flex-shrink: 0;
+  }
+
+  .setting-options {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 15px;
+  }
+
+  .setting-options label {
+    cursor: pointer;
+    font-weight: bold;
+    color: #555;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  @media screen and (max-width: 800px) {
+    .content-area {
+      width: 100%;
+    }
+
+    .converter-wrapper {
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .arrow-area {
+      height: auto;
+      transform: rotate(90deg);
+      margin: 10px 0;
+    }
+
+    .box {
+      width: 100%;
+      max-width: 350px;
+    }
+
+    .settings-container {
+      width: 100%;
+      max-width: 350px;
+      margin: 0 auto;
+    }
+
+    .setting-row {
+      max-width: 100%;
+    }
+  }
+
+  @media screen and (max-width: 430px) {
+    body {
+      padding: 12px;
+    }
+
+    .panel {
+      padding: 25px 15px;
+    }
+
+    .header-container h2 {
+      font-size: 18px;
+    }
+
+    .clear-btn {
+      padding: 6px 10px;
+      font-size: 13px;
+    }
+
+    .box {
+      padding: 20px;
+    }
+
+    .number-input {
+      width: 100px;
+      font-size: 14px;
+    }
+
+    .settings-container {
+      padding: 15px;
+    }
+    
+    .setting-row {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 8px;
+    }
+
+    .setting-label {
+      width: auto;
+    }
+    
+    .setting-options {
+      gap: 10px;
+    }
+  }
+</style>
+</head>
+
+<body>
+
+<div class="header-container">
+  <h2>熱量換算</h2>
+  <button type="button" class="clear-btn" onclick="clearAll()">
+    クリア
+  </button>
+</div>
+
+<div class="panel">
+  <div class="content-area">
+
+    <div class="converter-wrapper">
+
+      <!-- 換算前 -->
+      <div class="box">
+        <div class="box-title">換算前</div>
+
+        <div class="row">
+          <label class="label" for="base-mj">熱量</label>
+          <input
+            type="text"
+            id="base-mj"
+            class="number-input"
+            placeholder="数値入力"
+            inputmode="decimal"
+            autocomplete="off"
+            oninput="handleNumberInput(this)"
+          >
+          <span>MJ</span>
+        </div>
+
+        <div class="row">
+          <label class="label" for="base-m3">使用量</label>
+          <input
+            type="text"
+            id="base-m3"
+            class="number-input"
+            placeholder="数値入力"
+            inputmode="decimal"
+            autocomplete="off"
+            oninput="handleNumberInput(this)"
+          >
+          <span>m³</span>
+        </div>
+      </div>
+
+      <!-- 中央矢印 -->
+      <div class="arrow-area">
+        ➡
+      </div>
+
+      <!-- 換算後 -->
+      <div class="box">
+        <div class="box-title">換算後</div>
+
+        <div class="row">
+          <label class="label" for="target-mj">熱量</label>
+          <input
+            type="text"
+            id="target-mj"
+            class="number-input"
+            placeholder="数値入力"
+            inputmode="decimal"
+            autocomplete="off"
+            oninput="handleNumberInput(this)"
+          >
+          <span>MJ</span>
+        </div>
+
+        <div class="row">
+          <label class="label" for="target-m3">使用量</label>
+          <input
+            type="text"
+            id="target-m3"
+            class="number-input"
+            placeholder="数値入力"
+            inputmode="decimal"
+            autocomplete="off"
+            oninput="handleNumberInput(this)"
+          >
+          <span>m³</span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- 設定エリア -->
+    <div class="settings-container">
+      
+      <!-- 計算モード切替 -->
+      <div class="setting-row">
+        <span class="setting-label">計算項目：</span>
+        <div class="setting-options">
+          <label>
+            <input type="radio" name="calc-mode" value="m3" checked onchange="updateCalcMode()">
+            換算後の「使用量」
+          </label>
+          <label>
+            <input type="radio" name="calc-mode" value="mj" onchange="updateCalcMode()">
+            換算後の「熱量」
+          </label>
+        </div>
+      </div>
+
+      <hr style="width: 100%; border: 0; border-top: 1px solid #ddd; margin: 0;">
+
+      <!-- 端数処理 -->
+      <div class="setting-row">
+        <span class="setting-label">端数処理：</span>
+        <div class="setting-options">
+          <label>
+            <input type="radio" name="round" value="round" checked onchange="calculate()">
+            四捨五入
+          </label>
+          <label>
+            <input type="radio" name="round" value="floor" onchange="calculate()">
+            切り捨て
+          </label>
+          <label>
+            <input type="radio" name="round" value="ceil" onchange="calculate()">
+            切り上げ
+          </label>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+</div>
+
+<script>
+/**
+ * 数値取得用ユーティリティ
+ */
+function getNumericValue(id) {
+  const value = document.getElementById(id).value;
+  const rawValue = value.replace(/,/g, '');
+  if (rawValue === '' || isNaN(rawValue)) {
+    return NaN;
+  }
+  return parseFloat(rawValue);
+}
+
+/**
+ * 3桁カンマ区切りの文字列整形
+ */
+function formatNumber(value) {
+  if (value === '' || value === null || value === undefined) return '';
+  const parts = String(value).split('.');
+  parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  return parts.join('.');
+}
+
+/**
+ * 入力イベントハンドラ
+ */
+function handleNumberInput(input) {
+  // 全角数字を半角に変換
+  let val = input.value.replace(/[０-９]/g, s => String.fromCharCode(s.charCodeAt(0) - 0xfee0));
+  
+  // 数字とドット（.）以外を除去
+  val = val.replace(/[^0-9.]/g, '');
+
+  // 小数点が複数入力された場合は最初のみ保持
+  const parts = val.split('.');
+  if (parts.length > 2) {
+    val = parts[0] + '.' + parts.slice(1).join('');
+  }
+
+  // 桁区切り処理
+  if (val !== '') {
+    input.value = formatNumber(val);
+  } else {
+    input.value = '';
+  }
+
+  calculate();
+}
+
+/**
+ * モード切替（readonlyおよびplaceholderの設定）
+ */
+function updateCalcMode() {
+  const mode = document.querySelector('input[name="calc-mode"]:checked').value;
+  const targetMjInput = document.getElementById('target-mj');
+  const targetM3Input = document.getElementById('target-m3');
+
+  if (mode === 'm3') {
+    // 換算後の「使用量」を自動計算（readonly）にする
+    targetM3Input.readOnly = true;
+    targetM3Input.tabIndex = -1;
+    targetM3Input.placeholder = ''; // グレー表示時はプレースホルダー消去
+
+    targetMjInput.readOnly = false;
+    targetMjInput.removeAttribute('tabindex');
+    targetMjInput.placeholder = '数値入力';
+  } else {
+    // 換算後の「熱量」を自動計算（readonly）にする
+    targetMjInput.readOnly = true;
+    targetMjInput.tabIndex = -1;
+    targetMjInput.placeholder = ''; // グレー表示時はプレースホルダー消去
+
+    targetM3Input.readOnly = false;
+    targetM3Input.removeAttribute('tabindex');
+    targetM3Input.placeholder = '数値入力';
+  }
+  
+  targetMjInput.value = targetMjInput.readOnly ? '' : targetMjInput.value;
+  targetM3Input.value = targetM3Input.readOnly ? '' : targetM3Input.value;
+  
+  calculate();
+}
+
+/**
+ * クリア機能
+ */
+function clearAll() {
+  ['base-mj', 'base-m3', 'target-mj', 'target-m3'].forEach(id => {
+    document.getElementById(id).value = '';
+  });
+  calculate();
+}
+
+/**
+ * 計算処理
+ */
+function calculate() {
+  const mode = document.querySelector('input[name="calc-mode"]:checked').value;
+  const roundType = document.querySelector('input[name="round"]:checked').value;
+  
+  const baseMJ = getNumericValue('base-mj');
+  const baseM3 = getNumericValue('base-m3');
+  const totalHeat = baseM3 * baseMJ;
+
+  let result = NaN;
+  let resultInputId = '';
+
+  if (mode === 'm3') {
+    resultInputId = 'target-m3';
+    const targetMJ = getNumericValue('target-mj');
+    if (!isNaN(totalHeat) && !isNaN(targetMJ) && targetMJ !== 0) {
+      result = totalHeat / targetMJ;
+    }
+  } else {
+    resultInputId = 'target-mj';
+    const targetM3 = getNumericValue('target-m3');
+    if (!isNaN(totalHeat) && !isNaN(targetM3) && targetM3 !== 0) {
+      result = totalHeat / targetM3;
+    }
+  }
+
+  const resultInput = document.getElementById(resultInputId);
+  
+  if (!isNaN(result)) {
+    let processedResult;
+    switch (roundType) {
+      case 'round': processedResult = Math.round(result); break;
+      case 'floor': processedResult = Math.floor(result); break;
+      case 'ceil':  processedResult = Math.ceil(result); break;
+      default:      processedResult = result;
+    }
+    resultInput.value = formatNumber(processedResult);
+  } else {
+    resultInput.value = '';
+  }
+}
+
+// 初期実行
+window.addEventListener('DOMContentLoaded', () => {
+  updateCalcMode();
+});
+</script>
+
+</body>
+</html>
