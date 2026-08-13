@@ -1,0 +1,279 @@
+body {
+  font-family: sans-serif;
+  background: #f4f7f6;
+  padding: 20px;
+  max-width: 900px;
+  margin: auto;
+  color: #333;
+  display: flex;
+  flex-direction: column;
+  min-height: 95vh;
+  box-sizing: border-box;
+}
+
+/* ヘッダー：タイトル左、クリアボタン右寄せ */
+.header-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: relative;
+  margin-bottom: 25px;
+  margin-top: 10px;
+}
+
+.header-container h2 {
+  margin: 0;
+}
+
+.clear-btn {
+  padding: 8px 15px;
+  background: #ddd;
+  color: #333;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 15px;
+  font-family: inherit;
+  transition: 0.2s;
+}
+
+.clear-btn:hover {
+  background: #ccc;
+}
+
+.panel {
+  background: #fff;
+  padding: 30px;
+  border-radius: 8px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+}
+
+.content-area {
+  width: 718px;
+  max-width: 100%;
+  margin: 0 auto;
+}
+
+/* 換算エリア：両端揃えで下の設定エリアと端を合わせる */
+.converter-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 30px;
+}
+
+.box {
+  border: 1px solid #ddd;
+  padding: 25px;
+  width: 330px;
+  box-sizing: border-box;
+  position: relative;
+  border-radius: 6px;
+  background: #fafafa;
+  flex-shrink: 0;
+}
+
+.box-title {
+  position: absolute;
+  top: -12px;
+  left: 15px;
+  background: #fff;
+  padding: 0 8px;
+  font-weight: bold;
+  color: #2c3e50;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 15px;
+  gap: 10px;
+}
+
+.row:last-child {
+  margin-bottom: 0;
+}
+
+.label {
+  width: 60px;
+  font-weight: bold;
+  color: #555;
+  flex-shrink: 0;
+}
+
+.number-input {
+  width: 120px;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 16px; /* 16px以上にすることでiOSでのズームを防止 */
+  text-align: right;
+  font-family: inherit;
+  box-sizing: content-box;
+}
+
+.number-input:focus {
+  outline: none;
+  border-color: #3498db;
+  box-shadow: 0 0 5px rgba(52, 152, 219, 0.3);
+}
+
+.number-input:read-only {
+  background: #eee;
+  font-weight: bold;
+  color: #2980b9;
+  border-color: #ccc;
+  cursor: default;
+}
+
+.number-input:read-only:focus {
+  border-color: #ccc;
+  box-shadow: none;
+}
+
+/* 中央矢印エリアのスタイル調整 */
+.arrow-area {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 5px;
+}
+
+/* 幅と太さをアップさせたSVGアイコン設定 */
+.arrow-icon {
+  width: 64px;
+  height: 40px;
+  fill: #bbb;
+}
+
+/* 設定エリア */
+.settings-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 15px;
+  width: 100%;
+  box-sizing: border-box;
+  background: #f9f9f9;
+  padding: 20px;
+  border-radius: 6px;
+  border: 1px solid #ddd;
+}
+
+.setting-row {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  width: 100%;
+  max-width: 520px;
+}
+
+/* ラベルの左端を揃える設定 */
+.setting-label {
+  font-weight: bold;
+  color: #2c3e50;
+  width: 100px;
+  text-align: left;
+  flex-shrink: 0;
+}
+
+.setting-options {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+
+.setting-options label {
+  cursor: pointer;
+  font-weight: bold;
+  color: #555;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+@media screen and (max-width: 800px) {
+  .content-area {
+    width: 100%;
+  }
+
+  .converter-wrapper {
+    flex-direction: column;
+    align-items: center;
+    gap: 0; /* 上下要素の間隔を最小限に */
+  }
+
+  .arrow-area {
+    height: auto;
+    transform: rotate(90deg);
+    margin: 8px 0;
+  }
+
+  .arrow-icon {
+    width: 48px;
+    height: 32px;
+  }
+
+  .box {
+    width: 100%;
+    max-width: 350px;
+  }
+
+  .settings-container {
+    width: 100%;
+    max-width: 350px;
+    margin: 0 auto;
+  }
+
+  .setting-row {
+    max-width: 100%;
+  }
+}
+
+@media screen and (max-width: 430px) {
+  body {
+    padding: 12px;
+  }
+
+  .panel {
+    padding: 25px 15px;
+  }
+
+  /* スマホ表示時の左上タイトルを大きく（18px -> 24px） */
+  .header-container h2 {
+    font-size: 24px;
+  }
+
+  .clear-btn {
+    padding: 6px 10px;
+    font-size: 13px;
+  }
+
+  .box {
+    padding: 20px;
+  }
+
+  .number-input {
+    width: 100px;
+    font-size: 16px; /* 自動拡大防止のため16pxを維持 */
+  }
+
+  .settings-container {
+    padding: 15px;
+  }
+  
+  .setting-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .setting-label {
+    width: auto;
+  }
+  
+  .setting-options {
+    gap: 10px;
+  }
+}
