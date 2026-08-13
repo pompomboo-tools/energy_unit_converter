@@ -2,7 +2,8 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- maximum-scale=1.0 を追加してズームを防止 -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <meta name="robots" content="noindex, nofollow">
 <link rel="icon" href="./favicon.png" type="image/png" sizes="32x32">
 <link rel="apple-touch-icon" href="./apple-touch-icon.png" sizes="180x180">
@@ -118,7 +119,7 @@
     padding: 8px;
     border: 1px solid #ccc;
     border-radius: 4px;
-    font-size: 16px;
+    font-size: 16px; /* 16px以上にすることでiOSでのズームを防止 */
     text-align: right;
     font-family: inherit;
     box-sizing: content-box;
@@ -206,13 +207,14 @@
     .converter-wrapper {
       flex-direction: column;
       align-items: center;
-      gap: 10px;
+      gap: 0; /* 上下要素の間隔を最小限に */
     }
 
     .arrow-area {
       height: auto;
       transform: rotate(90deg);
-      margin: 10px 0;
+      margin: 2px 0; /* 10px 0 から詰める形に調整 */
+      font-size: 24px; /* 矢印サイズも少しだけ小ぶりに調整 */
     }
 
     .box {
@@ -255,7 +257,7 @@
 
     .number-input {
       width: 100px;
-      font-size: 14px;
+      font-size: 16px; /* 自動拡大防止のため16pxを維持 */
     }
 
     .settings-container {
