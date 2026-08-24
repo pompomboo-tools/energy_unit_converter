@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" href="./favicon.png" type="image/png" sizes="32x32">
+<link rel="apple-touch-icon" href="./apple-touch-icon.png" sizes="180x180">
+
+<title>熱量換算</title>
+
+<style>
+:root{--ios-blue:#007aff;--ios-blue-pressed:#0062cc;--bg:#f2f2f7;--card:#fff;--text:#1c1c1e;--sub:#636366;--sep:#d1d1d6;--fill:rgba(118,118,128,.12);--radius:16px;--cr:11px;--shadow:0 6px 20px rgba(0,0,0,.06),0 1px 3px rgba(0,0,0,.04)}
+*{box-sizing:border-box}html{background:var(--bg);-webkit-text-size-adjust:100%}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Hiragino Sans","Yu Gothic UI",Meiryo,sans-serif;background:var(--bg);color:var(--text);margin:0 auto;width:100%;max-width:680px;min-height:100vh;padding:max(22px,env(safe-area-inset-top)) max(20px,env(safe-area-inset-right)) max(28px,env(safe-area-inset-bottom)) max(20px,env(safe-area-inset-left));overflow-x:hidden;-webkit-font-smoothing:antialiased}
+
+/* インフォメーションボタン配置領域 */
+.info-positioner{
+  display:flex;
+  align-items:center;
+  justify-content:flex-end;
+  width:100vw;
+  min-height:44px;
+  margin:-22px 0 14px calc(50% - 50vw);
+  padding:max(4px, env(safe-area-inset-top)) max(14px, env(safe-area-inset-right)) 4px max(14px, env(safe-area-inset-left));
+  background:transparent;
+  border:0;
+  border-radius:0;
+  box-shadow:none;
+  backdrop-filter:none;
+  -webkit-backdrop-filter:none;
+}
+.info-positioner .info-button{flex:0 0 auto;width:40px;height:40px;background:#ffffff;color:#333333;border:1px solid #d1d1d6}
+.info-button{display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:var(--cr);background:#ffffff;color:#333333;border:1px solid #d1d1d6;padding:0;cursor:pointer;outline:none;font-family:Georgia,"Times New Roman",serif;font-size:20px;font-weight:400;font-style:normal;line-height:1;-webkit-tap-highlight-color:transparent;transition:transform .08s ease,background-color .15s ease,border-color .15s ease,color .15s ease}
+
+.panel{background:var(--card);padding:40px 22px 22px;border-radius:var(--radius);box-shadow:var(--shadow)}
+.content-area{width:100%;max-width:620px;margin:0 auto}
+
+/* 左右のボックス、端数処理エリア、クリアボタン枠の幅を完全に共通化 */
+.converter-wrapper{display:flex;align-items:stretch;justify-content:space-between;gap:12px;margin:0 0 18px;width:100%}
+.box{border:1px solid #e5e5ea;padding:24px;flex:1;min-width:0;position:relative;border-radius:14px;background:#f9f9fb}
+.box-title{position:absolute;top:-11px;left:15px;background:var(--card);padding:0 8px;font-weight:600;font-size:14px;color:var(--sub)}
+.row{display:flex;align-items:center;margin-bottom:15px;gap:10px}.row:last-child{margin-bottom:0}.label{width:60px;font-weight:600;color:var(--sub);flex-shrink:0;font-size:14px}.number-input{width:100%;max-width:120px;min-height:46px;padding:8px 11px;border:1px solid var(--sep);border-radius:var(--cr);font:inherit;font-size:16px;text-align:right;color:var(--text);background:#fff;outline:none}.number-input:focus{border-color:var(--ios-blue);box-shadow:0 0 0 3px rgba(0,122,255,.14)}.result-input{background:#f2f2f7;color:var(--ios-blue)}.equals{display:none}
+
+/* 端数処理エリア：左右の枠幅いっぱいに拡張 */
+.settings{width:100%;background:#f9f9fb;padding:16px;border-radius:14px;border:1px solid #e5e5ea;text-align:center}.settings strong{color:var(--text);margin-right:10px}.settings label{cursor:pointer;margin-right:15px;font-weight:600;color:var(--sub)}.settings input{accent-color:var(--ios-blue)}
+
+/* クリアボタン：右端ラインに隙間なく接地 */
+.input-actions{display:flex;justify-content:flex-end;width:100%;margin:14px 0 0}
+.clear-btn{min-height:44px;padding:0 18px;background:transparent;color:var(--sub);border:1px solid var(--sep);border-radius:var(--cr);cursor:pointer;font:inherit;font-size:15px;font-weight:500;transition:transform .08s ease,background-color .15s ease,border-color .15s ease,color .15s ease}
+button{-webkit-tap-highlight-color:transparent;touch-action:manipulation}button:focus-visible,input:focus-visible{outline:3px solid rgba(0,122,255,.28);outline-offset:2px}button:active{transform:scale(.98)}
+
+/* インフォメーションモーダル */
+.modal-overlay{
+  position:fixed;
+  inset:0;
+  width:100vw;
+  height:100vh;
+  background:rgba(0,0,0,.46);
+  backdrop-filter:blur(8px);
+  -webkit-backdrop-filter:blur(8px);
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  z-index:9999;
+  opacity:0;
+  visibility:hidden;
+  transition:opacity .25s ease,visibility .25s ease;
+  padding:22px;
+}
+.modal-overlay.active{opacity:1;visibility:visible}
+.modal-content{
+  position:relative;
+  width:min(520px, 100%);
+  max-height:calc(100vh - 44px);
+  background:#fff;
+  border-radius:20px;
+  padding:18px;
+  box-shadow:0 20px 60px rgba(0,0,0,.25);
+  overflow:hidden;
+  display:flex;
+  flex-direction:column;
+  transform:scale(.92);
+  transition:transform .25s cubic-bezier(.175,.885,.32,1.275);
+}
+.modal-overlay.active .modal-content{transform:scale(1)}
+.modal-close-btn{
+  position:absolute;
+  top:8px;
+  right:8px;
+  width:36px;
+  height:36px;
+  border-radius:50%;
+  background:rgba(118,118,128,.18);
+  color:#3a3a3c;
+  border:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  cursor:pointer;
+  z-index:10;
+  padding:0;
+  transition:background .15s ease,transform .15s ease;
+  -webkit-tap-highlight-color:transparent;
+}
+.modal-close-btn:active{transform:scale(.9);background:rgba(118,118,128,.25)}
+.modal-close-btn svg{width:18px;height:18px;stroke:currentColor;stroke-width:2.5;stroke-linecap:round}
+.modal-body{padding:0;display:flex;justify-content:center;align-items:center}
+.modal-body img{display:block;width:100%;max-height:calc(100vh - 80px);object-fit:contain;border-radius:12px}
+
+@media(hover:hover) and (pointer:fine){.info-button:hover{background:rgba(118,118,128,.08);border-color:#c7c7cc;color:var(--text)}.clear-btn:hover{background:rgba(118,118,128,.08);border-color:#c7c7cc;color:var(--text)}}
+@media(max-width:680px){.converter-wrapper{flex-direction:column;gap:30px;max-width:352px;margin-left:auto;margin-right:auto}.box,.settings,.content-area,.input-actions{width:100%;max-width:352px;margin-left:auto;margin-right:auto}}
+@media(max-width:600px){
+  body{padding:max(10px,env(safe-area-inset-top)) max(12px,env(safe-area-inset-right)) max(16px,env(safe-area-inset-bottom)) max(12px,env(safe-area-inset-left))}
+  .info-positioner{
+    width:100%;
+    min-height:42px;
+    margin:-10px 0 10px;
+    padding:max(3px, env(safe-area-inset-top)) 0 3px;
+    background:transparent;
+    border-bottom:0;
+    box-shadow:none;
+    backdrop-filter:none;
+    -webkit-backdrop-filter:none;
+  }
+  .info-positioner .info-button{width:40px;height:40px}
+  .panel{padding:30px 16px 16px;border-radius:15px}.box,.settings,.content-area,.input-actions{width:100%;max-width:300px;margin-left:auto;margin-right:auto}.box{padding:20px}.settings{text-align:left}.settings strong{display:block;margin:0 0 4px}.settings label{display:inline-block;margin-top:8px}.number-input{min-width:0;flex:1}
+}
+@media(max-width:350px){.panel{padding:26px 12px 12px}.box{padding:18px 14px}.label{width:54px}.number-input{padding-inline:8px}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+</style>
+</head>
+
+<body>
+<div class="info-positioner">
+  <button type="button" class="info-button" id="infoButton" aria-label="インフォメーション" aria-haspopup="dialog" aria-controls="infoModal">i</button>
+</div>
+<div class="panel">
+  <div class="content-area">
+    <div class="converter-wrapper">
+      <div class="box">
+        <div class="box-title">換算前</div>
+        <div class="row"><label class="label" for="base-mj">熱量</label><input type="text" id="base-mj" class="number-input" placeholder="数値入力" inputmode="numeric" autocomplete="off" oninput="handleNumberInput(this)"><span>MJ</span></div>
+        <div class="row"><label class="label" for="target-m3">使用量</label><input type="text" id="target-m3" class="number-input" placeholder="数値入力" inputmode="numeric" autocomplete="off" oninput="handleNumberInput(this)"><span>m³</span></div>
+      </div>
+      <div class="equals">＝</div>
+      <div class="box">
+        <div class="box-title">換算後</div>
+        <div class="row"><label class="label" for="target-mj">熱量</label><input type="text" id="target-mj" class="number-input" placeholder="数値入力" inputmode="numeric" autocomplete="off" oninput="handleNumberInput(this)"><span>MJ</span></div>
+        <div class="row"><label class="label" for="result-m3">使用量</label><input type="text" id="result-m3" class="number-input result-input" tabindex="-1" readonly><span>m³</span></div>
+      </div>
+    </div>
+    <div class="settings">
+      <strong>端数処理（小数点以下）：</strong>
+      <label><input type="radio" name="round" value="round" checked onchange="calculate()"> 四捨五入</label>
+      <label><input type="radio" name="round" value="floor" onchange="calculate()"> 切り捨て</label>
+      <label><input type="radio" name="round" value="ceil" onchange="calculate()"> 切り上げ</label>
+    </div>
+    <div class="input-actions"><button type="button" class="clear-btn" onclick="clearSettings()">クリア</button></div>
+  </div>
+</div>
+<div class="modal-overlay" id="infoModal" role="dialog" aria-modal="true" aria-hidden="true" aria-label="インフォメーション">
+  <div class="modal-content">
+    <button type="button" class="modal-close-btn" id="modalCloseBtn" aria-label="閉じる"><svg viewBox="0 0 24 24" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
+    <div class="modal-body"><img src="pompomboo-tools.png" alt="Pompomboo Tools"></div>
+  </div>
+</div>
+<script>
+const infoButton=document.getElementById('infoButton');
+const infoModal=document.getElementById('infoModal');
+const modalCloseBtn=document.getElementById('modalCloseBtn');
+let infoLastFocusedElement=null;
+function openInfoModal(){infoLastFocusedElement=document.activeElement;infoModal.classList.add('active');infoModal.setAttribute('aria-hidden','false');modalCloseBtn.focus();}
+function closeInfoModal(){infoModal.classList.remove('active');infoModal.setAttribute('aria-hidden','true');if(infoLastFocusedElement)infoLastFocusedElement.focus();}
+infoButton.addEventListener('click',openInfoModal);
+modalCloseBtn.addEventListener('click',closeInfoModal);
+infoModal.addEventListener('click',e=>{if(e.target===infoModal)closeInfoModal();});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&infoModal.classList.contains('active'))closeInfoModal();});
+
+function getNumericValue(value) {
+  const valueWithoutCommas = String(value).replace(/,/g, '');
+  if (valueWithoutCommas === '') {
+    return NaN;
+  }
+  return parseInt(valueWithoutCommas, 10);
+}
+
+function formatNumber(value) {
+  const numericValue = Number(value);
+  if (!Number.isFinite(numericValue)) {
+    return '';
+  }
+  return numericValue.toLocaleString('ja-JP');
+}
+
+function handleNumberInput(input) {
+  const originalValue = input.value;
+  const originalCursorPosition = input.selectionStart ?? originalValue.length;
+
+  const digitsBeforeCursor = originalValue
+    .slice(0, originalCursorPosition)
+    .replace(/\D/g, '')
+    .length;
+
+  let digitsOnly = originalValue.replace(/\D/g, '');
+  digitsOnly = digitsOnly.replace(/^0+(?=\d)/, '');
+
+  if (digitsOnly === '') {
+    input.value = '';
+    calculate();
+    return;
+  }
+
+  input.value = Number(digitsOnly).toLocaleString('ja-JP');
+
+  let newCursorPosition = 0;
+  let countedDigits = 0;
+
+  while (
+    newCursorPosition < input.value.length &&
+    countedDigits < digitsBeforeCursor
+  ) {
+    if (/\d/.test(input.value[newCursorPosition])) {
+      countedDigits++;
+    }
+    newCursorPosition++;
+  }
+
+  input.setSelectionRange(newCursorPosition, newCursorPosition);
+  calculate();
+}
+
+function clearSettings() {
+  document.getElementById('base-mj').value = '';
+  document.getElementById('target-m3').value = '';
+  document.getElementById('target-mj').value = '';
+  document.getElementById('result-m3').value = '';
+}
+
+function calculate() {
+  const baseMJ = getNumericValue(document.getElementById('base-mj').value);
+  const targetM3 = getNumericValue(document.getElementById('target-m3').value);
+  const targetMJ = getNumericValue(document.getElementById('target-mj').value);
+  const resultInput = document.getElementById('result-m3');
+  const roundType = document.querySelector('input[name="round"]:checked').value;
+
+  if (isNaN(baseMJ) || isNaN(targetM3) || isNaN(targetMJ) || targetMJ === 0) {
+    resultInput.value = '';
+    return;
+  }
+
+  let result = (targetM3 * baseMJ) / targetMJ;
+
+  if (roundType === 'round') {
+    result = Math.round(result);
+  } else if (roundType === 'floor') {
+    result = Math.floor(result);
+  } else if (roundType === 'ceil') {
+    result = Math.ceil(result);
+  }
+
+  resultInput.value = formatNumber(result);
+}
+
+window.addEventListener('DOMContentLoaded', function () {
+  const inputIds = ['base-mj', 'target-m3', 'target-mj'];
+  inputIds.forEach(function (id) {
+    const input = document.getElementById(id);
+    if (input.value !== '') {
+      const numericValue = getNumericValue(input.value);
+      input.value = formatNumber(numericValue);
+    }
+  });
+  calculate();
+});
+</script>
+</body>
+</html>
